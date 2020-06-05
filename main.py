@@ -1,8 +1,10 @@
 import osmnx as ox
 import os
-import methods
 import math
 import networkx as nx
+
+import DB
+import methods
 
 # matplotlib inline
 
@@ -23,6 +25,9 @@ if __name__=='__main__':
     #getGraph()   Запусти сначала эту функцию, она сохраняет граф, после этого можно функции ниже запускать
     #G=ox.io.load_graphml("C:\Python\ProjectG\data\g.graphml")  #Путь до файла
     #fig, ax = ox.plot_graph(ox.project_graph(G))
+
+
+    buildings=DB.getBuildings()
 
 
 

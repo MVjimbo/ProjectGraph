@@ -12,7 +12,8 @@ def connectionDB(database="map",user="postgres",passwd="",host="127.0.0.1",port=
    port="5432")
    return conn
 
-def getBuildings(conn):
+def getBuildings():
+    conn = connectionDB()
     cursor=conn.cursor()
     line="select id,street,number,st_AsText(linestring) from buildings where street is not null and number is not null"
     cursor.execute(line)
@@ -32,8 +33,10 @@ def getBuildings(conn):
             building.append({"is_Pair": False, "x":X,"y":Y})
         result_buildings.append(building)
     cursor.close()
+    conn.close()
 
-def getHospitals(conn):
+def getHospitals():
+    conn=connectionDB()
     cursor=conn.cursor()
     line="select id,street,number,name,st_AsText(linestring) from hospitals"
     cursor.execute(line)
@@ -53,8 +56,4 @@ def getHospitals(conn):
             hospital.append({"is_Pair": False, "x":X,"y":Y})
         result_hospitals.append(hospital)
     cursor.close()
-
-if __name__=="__main__":
-    conn=connectionDB()
-    getBuildings(conn)
     conn.close()
