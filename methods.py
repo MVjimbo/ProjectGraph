@@ -39,14 +39,16 @@ def Dijkstra(G,start,end):
                 len_shortest_way.update({node:length})
                 previoust_node.update({node:reading_node})
 
+    if (end.count(reading_node)==0):
+        return False
+
     shortest_way=[]
     shortest_way.append(reading_node)
 
-    if (end.count(reading_node)==0):
-        return False
+    result_node=reading_node
 
     while (reading_node!=start):
         reading_node=previoust_node.get(reading_node)
         shortest_way.append(reading_node)
     shortest_way.reverse()
-    return shortest_way
+    return [shortest_way,len_shortest_way.get(result_node)]

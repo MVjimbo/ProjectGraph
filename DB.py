@@ -34,6 +34,7 @@ def getBuildings():
         result_buildings.append(building)
     cursor.close()
     conn.close()
+    return result_buildings
 
 def getHospitals():
     conn=connectionDB()
@@ -48,7 +49,7 @@ def getHospitals():
         hospital=list(hospital)
         hospital.pop()
         if (len(coordinates)==2):
-            hospital.append({"is_Pair":True,"coordinate":(coordinates[1],coordinates[0])})
+            hospital.append({"is_Pair":True,"coordinates":(coordinates[1],coordinates[0])})
             count_t+=1
         else:
             X=[coordinate for coordinate in coordinates[::2]]
@@ -57,3 +58,4 @@ def getHospitals():
         result_hospitals.append(hospital)
     cursor.close()
     conn.close()
+    return result_hospitals
