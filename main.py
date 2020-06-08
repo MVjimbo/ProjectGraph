@@ -4,6 +4,7 @@ import math
 import networkx as nx
 
 import random
+import time
 
 import DB
 import methods
@@ -28,91 +29,125 @@ def get_nearest_nodes(G,buildings):
     return nearest_nodes
 
 
-def path_from_B_to_H(G,start_nodes_buildings,end_nodes_hodpitals,buildings,hospitals):
-    path_for_building={}
+
+
+def path_to_nearest(G,start_nodes_buildings,end_nodes_buildings,buildings,hospitals):
+    path_to_nearest={}
     for node,building in start_nodes_buildings.items():
-        is_Achivable=True
-        Dijkstra_result = methods.Dijkstra_list_ends_nearest(G, node, list(end_nodes_hodpitals.keys()))
-        if Dijkstra_result == False:
-            is_Achivable = False
-        if is_Achivable and (path_for_building.get(building)==None or path_for_building.get(building)[1]>Dijkstra_result[1]):
-            path_for_building.update({building:Dijkstra_result})
-        # for node in value:
-        #     Dijkstra_result=methods.Dijkstra(G,node,end_nodes_hodpitals.keys())
-        #     if Dijkstra_result==False:
-        #         is_Achivable=False
-        #     if is_Achivable and Dijkstra_result[1]<min_len_way:
-        #         min_way=Dijkstra_result[0]
-        #         min_len_way=Dijkstra_result[1]
-    for building,arr in path_for_building.items():
-        print(building)
-        print(arr[0])
-        print(arr[1])
-        print()
-
-
-def path_from_H_to_B(G,start_nodes_hospitals,end_nodes_buildings,buildings,hospitals):
-    path_for_hospitals={}
-    for node,building in start_nodes_hospitals.items():
         is_Achivable=True
         Dijkstra_result = methods.Dijkstra_list_ends_nearest(G, node, list(end_nodes_buildings.keys()))
         if Dijkstra_result == False:
             is_Achivable = False
-        if is_Achivable and (path_for_hospitals.get(building)==None or path_for_hospitals.get(building)[1]>Dijkstra_result[1]):
-            path_for_hospitals.update({building:Dijkstra_result})
-    for building, arr in path_for_hospitals.items():
-        print(building)
-        print(arr[0])
-        print(arr[1])
-        print()
+        if is_Achivable and (path_to_nearest.get(building)==None or path_to_nearest.get(building)[1]>Dijkstra_result[1]):
+            path_to_nearest.update({building:Dijkstra_result})
+    return path_to_nearest
 
 
-def path_from_B_to_H_back(G,nodes_buildings,nodes_hodpitals,buildings,hospitals):
-    path_from_B_to_H={}
-    for node_b,building in nodes_buildings.items():
-        is_Achivable=True
-        Dijkstra_result_dict=methods.Dijkstra_list_ends(G,node_b,list(nodes_hodpitals.keys()))
-        for node_h,hospital in nodes_hodpitals.items():
-            Dijkstra_result=Dijkstra_result_dict.get(node_h)
-            #Dijkstra_result = methods.Dijkstra_one_end(G, node_b, node_h)
+def path_to_all(G,start_nodes_buildings,end_nodes_buildings,buildings,hospitals):
+    path_to_all = {}
+    for node_b, building in start_nodes_buildings.items():
+        is_Achivable = True
+        Dijkstra_result_dict = methods.Dijkstra_list_ends_short(G, node_b, list(end_nodes_buildings.keys()))
+        for node_i, hospital in end_nodes_buildings.items():
+            Dijkstra_result = Dijkstra_result_dict.get(node_i)
+            # Dijkstra_result = methods.Dijkstra_one_end(G, node_b, node_h)
             # if Dijkstra_result==False:
             #     is_Achivable=False
-            if path_from_B_to_H.get((building,hospital))==None or path_from_B_to_H.get((building,hospital))[1]>Dijkstra_result[1]:
-                path_from_B_to_H.update({(building,hospital): Dijkstra_result})
-        print("Done hospitals")
-    print("Done for buildings")
+            if path_to_all.get((building, hospital)) == None or path_to_all.get((building, hospital))[1] > \
+                    Dijkstra_result[1]:
+                path_to_all.update({(building, hospital): Dijkstra_result})
+        print("done_to_all")
+    return path_to_all
 
-    path_from_H_to_B = {}
-    for node_h, hospital in nodes_hodpitals.items():
-        is_Achivable = True
-        Dijkstra_result_dict = methods.Dijkstra_list_ends(G, node_h, list(nodes_buildings.keys()))
-        for node_b, building in nodes_buildings.items():
-            Dijkstra_result=Dijkstra_result_dict.get(node_b)
-            # Dijkstra_result = methods.Dijkstra_one_end(G, node_h, node_b)
-            # if Dijkstra_result == False:
-            #     is_Achivable = False
-            if path_from_H_to_B.get((hospital, building)) == None or path_from_H_to_B.get((hospital,building))[1]>Dijkstra_result[1]:
-                path_from_H_to_B.update({(hospital,building): Dijkstra_result})
-        print("Done buildings")
-    print("Done for hospitals")
-    print(len(path_from_B_to_H))
-    print(len(path_from_H_to_B))
 
-    path_back_and_foth={}
+def path_to_all_maxlength(G, start_nodes_buildings, end_nodes_buildings, buildings, hospitals, maxlength):
+    path_all=path_to_all(G, start_nodes_buildings, end_nodes_buildings, buildings, hospitals)
+    path_filtered={}
+    for key,path in path_all.items():
+        if path[1]<maxlength:
+            path_filtered.update({key:path})
+    return path_filtered
+
+
+def path_to_all_maxlength_from_path(path_all, buildings, hospitals,maxlength):
+    path_filtered = {}
+    for key, path in path_all.items():
+        if path[1] < maxlength:
+            path_filtered.update({key: path})
+    return path_filtered
+
+
+
+def path_back_and_foth(G,start_nodes_buildings,end_nodes_buildings,buildings,hospitals):
+    # path={}
+    # list_nodes_buildings=list(nodes_buildings.keys())
+    # list_nodes_hospitals=list(nodes_hospitals.keys())
+    # for node_b,building in nodes_buildings.item():
+    #     for node_h,hospital in nodes_hospitalspitals.item():
+    #         D=methods.Dijkstra_list_ends(G,node_b,list_nodes_hospitals)
+    paths_BI=path_to_all(G,start_nodes_buildings,end_nodes_buildings,buildings,hospitals)
+
+    paths_IB = path_to_all(G,end_nodes_buildings,start_nodes_buildings,buildings,hospitals)
+
+    path_baf={}
 
     for building in buildings:
         for hospital in hospitals:
-            if path_back_and_foth.get((building[0],hospital[0]))==None or path_back_and_foth.get((building[0],hospital[0]))>path_from_B_to_H.get((building[0],hospital[0]))[1]+path_from_H_to_B.get((hospital[0],building[0]))[1]:
-                path_back_and_foth.update({(building[0],hospital[0]):[path_from_B_to_H.get(
-                    (building[0], hospital[0]))[0],path_from_H_to_B.get((hospital[0], building[0]))[0],path_from_B_to_H.get(
-                    (building[0], hospital[0]))[1] + path_from_H_to_B.get((hospital[0], building[0]))[1]]})
+            path_BI=paths_BI.get((building[0],hospital[0]))
+            path_IB=paths_IB.get((hospital[0], building[0]))
+            if path_baf.get((building[0],hospital[0]))==None or path_baf.get((building[0],hospital[0]))>path_BI[1]+path_IB[1]:
+                path_baf.update({(building[0],hospital[0]):[path_BI[0],path_IB[0],path_BI[1] + path_IB[1]]})
 
-    for key,values in path_back_and_foth.items():
+    for key,values in path_baf.items():
         print(key)
         print(values[0])
         print(values[1])
         print(values[2])
         print()
+    return path_baf
+
+
+
+def path_back_and_foth_maxlength(G,start_nodes_buildings,end_nodes_buildings,buildings,hospitals,maxlength):
+    path_baf=path_back_and_foth(G,start_nodes_buildings,end_nodes_buildings,buildings,hospitals)
+
+    path_filtered={}
+    for key,path in path_baf.items():
+        if path[2]<maxlength:
+            path_filtered.update({key:path})
+    return path_filtered
+
+
+def path_back_and_foth_from_path(paths_BI,paths_IB, buildings,hospitals):
+    path_baf = {}
+
+    for building in buildings:
+        for hospital in hospitals:
+            path_BI = paths_BI.get((building[0], hospital[0]))
+            path_IB = paths_IB.get((hospital[0], building[0]))
+            if path_baf.get((building[0], hospital[0])) == None or path_baf.get((building[0], hospital[0])) > path_BI[
+                1] + path_IB[1]:
+                path_baf.update({(building[0], hospital[0]): [path_BI[0], path_IB[0], path_BI[1] + path_IB[1]]})
+    return path_baf
+
+
+def path_back_and_foth_from_path_maxlength(paths_BI,paths_IB, buildings,hospitals,maxlength):
+    path_baf = {}
+
+    for building in buildings:
+        for hospital in hospitals:
+            path_BI = paths_BI.get((building[0], hospital[0]))
+            path_IB = paths_IB.get((hospital[0], building[0]))
+            if path_baf.get((building[0], hospital[0])) == None or path_baf.get((building[0], hospital[0])) > path_BI[
+                1] + path_IB[1]:
+                path_baf.update({(building[0], hospital[0]): [path_BI[0], path_IB[0], path_BI[1] + path_IB[1]]})
+
+    path_filtered = {}
+    for key, path in path_baf.items():
+        if path[2] < maxlength:
+            path_filtered.update({key: path})
+
+    return path_filtered
 
 
 if __name__=='__main__':
@@ -125,13 +160,28 @@ if __name__=='__main__':
     #getGraph()   Запусти сначала эту функцию, она сохраняет граф, после этого можно функции ниже запускать
     G=ox.io.load_graphml("C:\Python\ProjectG\data\g.graphml")  #Путь до файла
     #fig, ax = ox.plot_graph(ox.project_graph(G))
-    buildings=random.sample(DB.getBuildings(),5)
-    hospitals=random.sample(DB.getHospitals(),3)
+    buildings=random.sample(DB.getBuildings(),3)
+    hospitals=random.sample(DB.getHospitals(),2)
     nearest_nodes_hospitals=get_nearest_nodes(G,hospitals)
     print(nearest_nodes_hospitals)
     nearest_nodes_buildings=get_nearest_nodes(G,buildings)
-    path_from_B_to_H_back(G,nearest_nodes_buildings,nearest_nodes_hospitals,buildings,hospitals)
+    print(nearest_nodes_buildings)
 
+
+    path_from_B_to_H=path_to_all(G,nearest_nodes_buildings,nearest_nodes_hospitals,buildings,hospitals)
+    path_from_H_to_B=path_to_all(G,nearest_nodes_hospitals,nearest_nodes_buildings,buildings,hospitals)
+
+    p=path_back_and_foth_from_path(path_from_B_to_H,path_from_H_to_B,buildings,hospitals)
+    print(p)
+
+    # print(path_from_B_to_H)
+    # print()
+    # print(path_from_B_to_H_min)
+
+    # for i,j in zip(path_new.items(),path_old.items()):
+    #     if i[0]!=j[0] or i[1]!=j[1]:
+    #         print("bruh")
+    #         break
 
 
 
